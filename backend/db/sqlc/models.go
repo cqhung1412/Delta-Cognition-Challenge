@@ -12,10 +12,10 @@ import (
 type Dog struct {
 	ID        int64          `json:"id"`
 	OwnerID   sql.NullInt64  `json:"owner_id"`
-	Image     []byte         `json:"image"`
 	Name      string         `json:"name"`
 	Breed     string         `json:"breed"`
 	BirthYear int32          `json:"birth_year"`
+	ImageType string         `json:"image_type"`
 	Message   sql.NullString `json:"message"`
 	// get from rekognition
 	Labels    []string  `json:"labels"`

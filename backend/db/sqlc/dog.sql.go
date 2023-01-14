@@ -16,43 +16,43 @@ const createDog = `-- name: CreateDog :one
 INSERT INTO dogs 
   (
     owner_id,
-    image,
     name,
     breed,
     birth_year,
+    image_type,
     message
   )
 VALUES 
   ($1, $2, $3, $4, $5, $6) 
-RETURNING id, owner_id, image, name, breed, birth_year, message, labels, created_at
+RETURNING id, owner_id, name, breed, birth_year, image_type, message, labels, created_at
 `
 
 type CreateDogParams struct {
 	OwnerID   sql.NullInt64  `json:"owner_id"`
-	Image     []byte         `json:"image"`
 	Name      string         `json:"name"`
 	Breed     string         `json:"breed"`
 	BirthYear int32          `json:"birth_year"`
+	ImageType string         `json:"image_type"`
 	Message   sql.NullString `json:"message"`
 }
 
 func (q *Queries) CreateDog(ctx context.Context, arg CreateDogParams) (Dog, error) {
 	row := q.db.QueryRowContext(ctx, createDog,
 		arg.OwnerID,
-		arg.Image,
 		arg.Name,
 		arg.Breed,
 		arg.BirthYear,
+		arg.ImageType,
 		arg.Message,
 	)
 	var i Dog
 	err := row.Scan(
 		&i.ID,
 		&i.OwnerID,
-		&i.Image,
 		&i.Name,
 		&i.Breed,
 		&i.BirthYear,
+		&i.ImageType,
 		&i.Message,
 		pq.Array(&i.Labels),
 		&i.CreatedAt,
@@ -60,8 +60,23 @@ func (q *Queries) CreateDog(ctx context.Context, arg CreateDogParams) (Dog, erro
 	return i, err
 }
 
+const deleteDog = `-- name: DeleteDog :exec
+DELETE FROM dogs
+WHERE id = $1 AND owner_id = $2
+`
+
+type DeleteDogParams struct {
+	ID      int64         `json:"id"`
+	OwnerID sql.NullInt64 `json:"owner_id"`
+}
+
+func (q *Queries) DeleteDog(ctx context.Context, arg DeleteDogParams) error {
+	_, err := q.db.ExecContext(ctx, deleteDog, arg.ID, arg.OwnerID)
+	return err
+}
+
 const getDog = `-- name: GetDog :one
-SELECT id, owner_id, image, name, breed, birth_year, message, labels, created_at
+SELECT id, owner_id, name, breed, birth_year, image_type, message, labels, created_at
 FROM dogs
 WHERE id = $1
 LIMIT 1
@@ -73,10 +88,10 @@ func (q *Queries) GetDog(ctx context.Context, id int64) (Dog, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.OwnerID,
-		&i.Image,
 		&i.Name,
 		&i.Breed,
 		&i.BirthYear,
+		&i.ImageType,
 		&i.Message,
 		pq.Array(&i.Labels),
 		&i.CreatedAt,
@@ -84,21 +99,21 @@ func (q *Queries) GetDog(ctx context.Context, id int64) (Dog, error) {
 	return i, err
 }
 
-const getOwnedDogs = `-- name: GetOwnedDogs :many
-SELECT id, owner_id, image, name, breed, birth_year, message, labels, created_at
+const getDogs = `-- name: GetDogs :many
+SELECT id, owner_id, name, breed, birth_year, image_type, message, labels, created_at
 FROM dogs
-WHERE owner_id = $1
+ORDER BY id DESC
 LIMIT $1
 OFFSET $2
 `
 
-type GetOwnedDogsParams struct {
+type GetDogsParams struct {
 	Limit  int32 `json:"limit"`
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) GetOwnedDogs(ctx context.Context, arg GetOwnedDogsParams) ([]Dog, error) {
-	rows, err := q.db.QueryContext(ctx, getOwnedDogs, arg.Limit, arg.Offset)
+func (q *Queries) GetDogs(ctx context.Context, arg GetDogsParams) ([]Dog, error) {
+	rows, err := q.db.QueryContext(ctx, getDogs, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -109,10 +124,49 @@ func (q *Queries) GetOwnedDogs(ctx context.Context, arg GetOwnedDogsParams) ([]D
 		if err := rows.Scan(
 			&i.ID,
 			&i.OwnerID,
-			&i.Image,
 			&i.Name,
 			&i.Breed,
 			&i.BirthYear,
+			&i.ImageType,
+			&i.Message,
+			pq.Array(&i.Labels),
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOwnedDogs = `-- name: GetOwnedDogs :many
+SELECT id, owner_id, name, breed, birth_year, image_type, message, labels, created_at
+FROM dogs
+WHERE owner_id = $1
+`
+
+func (q *Queries) GetOwnedDogs(ctx context.Context, ownerID sql.NullInt64) ([]Dog, error) {
+	rows, err := q.db.QueryContext(ctx, getOwnedDogs, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Dog{}
+	for rows.Next() {
+		var i Dog
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.Name,
+			&i.Breed,
+			&i.BirthYear,
+			&i.ImageType,
 			&i.Message,
 			pq.Array(&i.Labels),
 			&i.CreatedAt,
@@ -133,10 +187,10 @@ func (q *Queries) GetOwnedDogs(ctx context.Context, arg GetOwnedDogsParams) ([]D
 const getSimilarDogs = `-- name: GetSimilarDogs :many
 SELECT
   id,
-  image,
   name,
   birth_year,
   breed,
+  image_type,
   message,
   labels
 FROM dogs
@@ -161,8 +215,8 @@ ORDER BY
       WHERE dogs.id = $1
     ) THEN 1
     ELSE 2
-  END,
-  similarity DESC
+  END DESC,
+  id DESC
 LIMIT $2
 OFFSET $3
 `
@@ -175,10 +229,10 @@ type GetSimilarDogsParams struct {
 
 type GetSimilarDogsRow struct {
 	ID        int64          `json:"id"`
-	Image     []byte         `json:"image"`
 	Name      string         `json:"name"`
 	BirthYear int32          `json:"birth_year"`
 	Breed     string         `json:"breed"`
+	ImageType string         `json:"image_type"`
 	Message   sql.NullString `json:"message"`
 	Labels    []string       `json:"labels"`
 }
@@ -194,10 +248,10 @@ func (q *Queries) GetSimilarDogs(ctx context.Context, arg GetSimilarDogsParams) 
 		var i GetSimilarDogsRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.Image,
 			&i.Name,
 			&i.BirthYear,
 			&i.Breed,
+			&i.ImageType,
 			&i.Message,
 			pq.Array(&i.Labels),
 		); err != nil {
@@ -217,25 +271,26 @@ func (q *Queries) GetSimilarDogs(ctx context.Context, arg GetSimilarDogsParams) 
 const updateDogLabels = `-- name: UpdateDogLabels :one
 UPDATE dogs
 SET labels = $1
-WHERE id = $2
-RETURNING id, owner_id, image, name, breed, birth_year, message, labels, created_at
+WHERE id = $2 AND owner_id = $3
+RETURNING id, owner_id, name, breed, birth_year, image_type, message, labels, created_at
 `
 
 type UpdateDogLabelsParams struct {
-	Labels []string `json:"labels"`
-	ID     int64    `json:"id"`
+	Labels  []string      `json:"labels"`
+	ID      int64         `json:"id"`
+	OwnerID sql.NullInt64 `json:"owner_id"`
 }
 
 func (q *Queries) UpdateDogLabels(ctx context.Context, arg UpdateDogLabelsParams) (Dog, error) {
-	row := q.db.QueryRowContext(ctx, updateDogLabels, pq.Array(arg.Labels), arg.ID)
+	row := q.db.QueryRowContext(ctx, updateDogLabels, pq.Array(arg.Labels), arg.ID, arg.OwnerID)
 	var i Dog
 	err := row.Scan(
 		&i.ID,
 		&i.OwnerID,
-		&i.Image,
 		&i.Name,
 		&i.Breed,
 		&i.BirthYear,
+		&i.ImageType,
 		&i.Message,
 		pq.Array(&i.Labels),
 		&i.CreatedAt,

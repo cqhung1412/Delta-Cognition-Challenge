@@ -6,18 +6,22 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Querier interface {
 	CreateDog(ctx context.Context, arg CreateDogParams) (Dog, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteDog(ctx context.Context, arg DeleteDogParams) error
 	DeleteFavorite(ctx context.Context, arg DeleteFavoriteParams) error
 	GetDog(ctx context.Context, id int64) (Dog, error)
+	GetDogs(ctx context.Context, arg GetDogsParams) ([]Dog, error)
 	GetFavoritesByDog(ctx context.Context, dogID int64) ([]Favorite, error)
 	GetFavoritesByUser(ctx context.Context, userID int64) ([]Favorite, error)
-	GetOwnedDogs(ctx context.Context, arg GetOwnedDogsParams) ([]Dog, error)
+	GetOwnedDogs(ctx context.Context, ownerID sql.NullInt64) ([]Dog, error)
 	GetSimilarDogs(ctx context.Context, arg GetSimilarDogsParams) ([]GetSimilarDogsRow, error)
 	GetUser(ctx context.Context, email string) (User, error)
+	GetUserByID(ctx context.Context, id int64) (User, error)
 	UpdateDogLabels(ctx context.Context, arg UpdateDogLabelsParams) (Dog, error)
 }
 

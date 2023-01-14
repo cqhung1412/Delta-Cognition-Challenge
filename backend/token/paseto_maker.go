@@ -15,8 +15,8 @@ type PasetoMaker struct {
 
 // var footer = "BigCityBear"
 
-func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, error) {
-	payload, err := NewPayload(username, duration)
+func (maker *PasetoMaker) CreateToken(id int64, email string, duration time.Duration) (string, error) {
+	payload, err := NewPayload(id, email, duration)
 	if err != nil {
 		return "", err
 	}

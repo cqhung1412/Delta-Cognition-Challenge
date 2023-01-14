@@ -8,12 +8,12 @@ CREATE TABLE "users" (
 CREATE TABLE "dogs" (
   "id" bigserial PRIMARY KEY,
   "owner_id" bigint,
-  "image" bytea NOT NULL,
   "name" varchar NOT NULL,
   "breed" varchar NOT NULL,
   "birth_year" integer NOT NULL,
+  "image_type" varchar NOT NULL,
   "message" varchar,
-  "labels" varchar[],
+  "labels" varchar[] DEFAULT (array[]::varchar[]),
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 

@@ -2,10 +2,10 @@
 INSERT INTO dogs 
   (
     owner_id,
-    image,
     name,
     breed,
     birth_year,
+    image_type,
     message
   )
 VALUES 
@@ -15,7 +15,7 @@ RETURNING *;
 -- name: UpdateDogLabels :one
 UPDATE dogs
 SET labels = $1
-WHERE id = $2
+WHERE id = $2 AND owner_id = $3
 RETURNING *;
 
 -- name: GetDog :one
@@ -27,17 +27,22 @@ LIMIT 1;
 -- name: GetOwnedDogs :many
 SELECT *
 FROM dogs
-WHERE owner_id = $1
+WHERE owner_id = $1;
+
+-- name: GetDogs :many
+SELECT *
+FROM dogs
+ORDER BY id DESC
 LIMIT $1
 OFFSET $2;
 
 -- name: GetSimilarDogs :many
 SELECT
   id,
-  image,
   name,
   birth_year,
   breed,
+  image_type,
   message,
   labels
 FROM dogs
@@ -62,7 +67,11 @@ ORDER BY
       WHERE dogs.id = $1
     ) THEN 1
     ELSE 2
-  END,
-  similarity DESC
+  END DESC,
+  id DESC
 LIMIT $2
 OFFSET $3;
+
+-- name: DeleteDog :exec
+DELETE FROM dogs
+WHERE id = $1 AND owner_id = $2;

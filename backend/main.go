@@ -11,6 +11,14 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// @title DOG RECOMMEND API
+// @version 1.0
+// @termsOfService http://swagger.io/terms/
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host unknown
+// @http.schemes https
+// @BasePath /api/v1
 func main() {
 	config, err := util.LoadConfig(".")
 	if err != nil {

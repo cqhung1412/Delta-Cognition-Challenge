@@ -1,34 +1,35 @@
-import React, { useState } from "react";
-import reactLogo from "./assets/react.svg";
+import React, { useEffect, useState } from "react";
+import axios from "./axios";
 import "./App.css";
+import Header from "./components/header";
+import getTokenHeader from "./utils/token";
+import Feed from "./components/feed";
 
 function App() {
-  const [active, setActive] = useState(false);
+  const [isAuth, setIsAuth] = useState(false);
 
-  const onToggleActive = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setActive(!active);
+  useEffect(() => {
+    getCurrentUser();
+  }, []);
+
+  const getCurrentUser = () => {
+    return axios
+      .get("/user", {
+        headers: {
+          Authorization: getTokenHeader(),
+        },
+      })
+      .then((res) => {
+        console.log(res);
+        setIsAuth(true);
+      })
+      .catch((err) => console.log(err));
   };
+
   return (
     <div className="App">
-      <div className="toggle">
-        <a onClick={onToggleActive}>
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <div className={`menu ${active ? "active" : ""}`}>
-        <ul>
-          <li>
-            <a href="#">Home</a>
-          </li>
-          <li>
-            <a href="#">About</a>
-          </li>
-          <li>
-            <a href="#">Contact Us</a>
-          </li>
-        </ul>
-      </div>
+      <Header isAuth={isAuth} onGetCurrentUser={getCurrentUser} />
+      <Feed isAuth={isAuth} />
     </div>
   );
 }

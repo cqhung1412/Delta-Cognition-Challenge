@@ -6,6 +6,7 @@ package mockdb
 
 import (
 	context "context"
+	sql "database/sql"
 	sqlc "dog-recommend/db/sqlc"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
@@ -64,6 +65,20 @@ func (mr *MockStoreMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockStore)(nil).CreateUser), arg0, arg1)
 }
 
+// DeleteDog mocks base method
+func (m *MockStore) DeleteDog(arg0 context.Context, arg1 sqlc.DeleteDogParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteDog", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDog indicates an expected call of DeleteDog
+func (mr *MockStoreMockRecorder) DeleteDog(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDog", reflect.TypeOf((*MockStore)(nil).DeleteDog), arg0, arg1)
+}
+
 // DeleteFavorite mocks base method
 func (m *MockStore) DeleteFavorite(arg0 context.Context, arg1 sqlc.DeleteFavoriteParams) error {
 	m.ctrl.T.Helper()
@@ -91,6 +106,21 @@ func (m *MockStore) GetDog(arg0 context.Context, arg1 int64) (sqlc.Dog, error) {
 func (mr *MockStoreMockRecorder) GetDog(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDog", reflect.TypeOf((*MockStore)(nil).GetDog), arg0, arg1)
+}
+
+// GetDogs mocks base method
+func (m *MockStore) GetDogs(arg0 context.Context, arg1 sqlc.GetDogsParams) ([]sqlc.Dog, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDogs", arg0, arg1)
+	ret0, _ := ret[0].([]sqlc.Dog)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDogs indicates an expected call of GetDogs
+func (mr *MockStoreMockRecorder) GetDogs(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDogs", reflect.TypeOf((*MockStore)(nil).GetDogs), arg0, arg1)
 }
 
 // GetFavoritesByDog mocks base method
@@ -124,7 +154,7 @@ func (mr *MockStoreMockRecorder) GetFavoritesByUser(arg0, arg1 interface{}) *gom
 }
 
 // GetOwnedDogs mocks base method
-func (m *MockStore) GetOwnedDogs(arg0 context.Context, arg1 sqlc.GetOwnedDogsParams) ([]sqlc.Dog, error) {
+func (m *MockStore) GetOwnedDogs(arg0 context.Context, arg1 sql.NullInt64) ([]sqlc.Dog, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOwnedDogs", arg0, arg1)
 	ret0, _ := ret[0].([]sqlc.Dog)
@@ -166,6 +196,21 @@ func (m *MockStore) GetUser(arg0 context.Context, arg1 string) (sqlc.User, error
 func (mr *MockStoreMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockStore)(nil).GetUser), arg0, arg1)
+}
+
+// GetUserByID mocks base method
+func (m *MockStore) GetUserByID(arg0 context.Context, arg1 int64) (sqlc.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByID", arg0, arg1)
+	ret0, _ := ret[0].(sqlc.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByID indicates an expected call of GetUserByID
+func (mr *MockStoreMockRecorder) GetUserByID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockStore)(nil).GetUserByID), arg0, arg1)
 }
 
 // UpdateDogLabels mocks base method
