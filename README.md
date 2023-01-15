@@ -27,6 +27,10 @@ The database schema is described in this [link](https://dbdiagram.io/d/63c1a9f52
 
 The queries are written in this [folder](backend/db/query)
 
+## Results
+
+The results is described in this [file](results/RESULT.md).
+
 ## Missing Features
 
 - The user shall select a dog image and save it to the favourite list.
