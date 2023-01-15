@@ -45,4 +45,4 @@ The results is described in this [file](results/RESULT.md).
 ## Future Improvements
 
 - Create a Github Actions pipeline to deploy the application to AWS Fargate or EKS.
-- Refactor code (weakly types in Reactjs, poor error handling, etc.)
+- Refactor code (it got bad real quick D:, weakly types in Reactjs, poor error handling, etc.)
